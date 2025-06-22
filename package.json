@@ -20,9 +20,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@clerk/backend": "^2.1.0",
     "@clerk/nextjs": "^6.22.0",
     "@convex-dev/eslint-plugin": "^0.0.1-alpha.4",
     "@convex-dev/persistent-text-streaming": "^0.2.3",
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@t3-oss/env-nextjs": "^0.12.0",

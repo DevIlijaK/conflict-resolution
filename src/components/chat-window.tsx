@@ -3,7 +3,7 @@
 import { useQuery, useMutation } from "convex/react";
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import MessageItem from "./message-item";
-import { api } from "../../../convex/_generated/api";
+import { api } from "convex/_generated/api";
 import dynamic from "next/dynamic";
 import { useWindowSize } from "~/lib/utils";
 

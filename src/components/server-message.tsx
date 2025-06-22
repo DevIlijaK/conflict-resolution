@@ -1,7 +1,7 @@
 import { type StreamId } from "@convex-dev/persistent-text-streaming";
 import { useStream } from "@convex-dev/persistent-text-streaming/react";
-import { api } from "../../../convex/_generated/api";
-import { type Doc } from "../../../convex/_generated/dataModel";
+import { api } from "convex/_generated/api";
+import { type Doc } from "convex/_generated/dataModel";
 import { useMemo, useEffect } from "react";
 import Markdown from "react-markdown";
 

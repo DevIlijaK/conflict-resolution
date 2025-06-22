@@ -1,15 +1,17 @@
 "use client";
 
 import { Authenticated, Unauthenticated } from "convex/react";
-import ChatWindow from "./components/chat-window";
-import LoginForm from "./components/login-form";
+import ConflictManager from "~/components/conflict-manager";
+import Header from "~/components/header";
+import LoginForm from "~/components/login-form";
 
 export default function Home() {
   return (
-    <main className="flex h-screen flex-col">
+    <main className="bg-background min-h-screen">
       <>
         <Authenticated>
-          <ChatWindow />
+          <Header />
+          <ConflictManager />
         </Authenticated>
         <Unauthenticated>
           <LoginForm />

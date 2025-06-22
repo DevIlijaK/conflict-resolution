@@ -2,8 +2,8 @@ import "~/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
-import ConvexClientProvider from "./ConvexClientProvider";
 import { ClerkProvider } from "@clerk/nextjs";
+import ConvexClientProvider from "./convex-client-provider";
 
 export const metadata: Metadata = {
   title: "Create T3 App",

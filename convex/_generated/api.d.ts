@@ -9,6 +9,7 @@
  */
 
 import type * as chat from "../chat.js";
+import type * as conflicts from "../conflicts.js";
 import type * as http from "../http.js";
 import type * as messages from "../messages.js";
 import type * as streaming from "../streaming.js";
@@ -30,6 +31,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   chat: typeof chat;
+  conflicts: typeof conflicts;
   http: typeof http;
   messages: typeof messages;
   streaming: typeof streaming;

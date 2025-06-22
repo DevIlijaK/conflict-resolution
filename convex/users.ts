@@ -62,7 +62,7 @@ export const updateOrCreateUser = internalMutation({
 
     if (userRecord === null) {
       const colors = ["red", "green", "blue"];
-      const color = colors[Math.floor(Math.random() * colors.length)];
+      const color = colors[Math.floor(Math.random() * colors.length)]!;
       await ctx.db.insert("users", { clerkUser, color });
     } else {
       await ctx.db.patch(userRecord._id, { clerkUser });
