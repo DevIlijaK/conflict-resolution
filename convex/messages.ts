@@ -14,7 +14,6 @@ export const clearMessages = mutation({
   args: {},
   handler: async (ctx) => {
     const chats = await ctx.db.query("userMessages").collect();
-    // eslint-disable-next-line drizzle/enforce-delete-with-where
     await Promise.all(chats.map((chat) => ctx.db.delete(chat._id)));
   },
 });

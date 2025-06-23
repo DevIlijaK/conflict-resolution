@@ -1,7 +1,6 @@
 import { FlatCompat } from "@eslint/eslintrc";
 import tseslint from "typescript-eslint";
 // @ts-ignore -- no types for this plugin
-import drizzle from "eslint-plugin-drizzle";
 import convexPlugin from "@convex-dev/eslint-plugin";
 
 const compat = new FlatCompat({
@@ -16,9 +15,6 @@ export default tseslint.config(
   ...convexPlugin.configs.recommended,
   {
     files: ["**/*.ts", "**/*.tsx"],
-    plugins: {
-      drizzle,
-    },
     extends: [
       ...tseslint.configs.recommended,
       ...tseslint.configs.recommendedTypeChecked,
