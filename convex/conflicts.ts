@@ -274,3 +274,37 @@ export const getConflictStats = query({
     return stats;
   },
 });
+
+// Send invitation email to other party
+export const sendInvitation = mutation({
+  args: {
+    conflictId: v.id("conflicts"),
+    email: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const user = await mustGetCurrentUser(ctx);
+    const conflict = await ctx.db.get(args.conflictId);
+
+    if (!conflict) {
+      throw new Error("Conflict not found");
+    }
+
+    // Only creator can send invitations
+    if (conflict.createdBy !== user._id) {
+      throw new Error(
+        "Access denied: Only the conflict creator can send invitations",
+      );
+    }
+
+    // TODO: Implement actual email sending logic
+    // For now, just log the invitation
+    console.log(
+      `Sending invitation for conflict ${args.conflictId} to ${args.email}`,
+    );
+    console.log(`Conflict: ${conflict.title}`);
+    console.log(`From: ${user.clerkUser.primaryEmailAddress?.emailAddress}`);
+
+    return null;
+  },
+});
