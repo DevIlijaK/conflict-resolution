@@ -4,21 +4,33 @@ import { api } from "convex/_generated/api";
 import { type Doc } from "convex/_generated/dataModel";
 import { useMemo, useEffect } from "react";
 import Markdown from "react-markdown";
+import { env } from "../env";
 
 export function ServerMessage({
   message,
   isDriven,
   stopStreaming,
   scrollToBottom,
+  isConflictMessage = false,
 }: {
   message: Doc<"userMessages">;
   isDriven: boolean;
   stopStreaming: () => void;
   scrollToBottom: () => void;
+  isConflictMessage?: boolean;
 }) {
+  // Choose the appropriate streaming endpoint
+  const streamingUrl = useMemo(() => {
+    const baseUrl = env.NEXT_PUBLIC_CONVEX_HTTP_URL;
+    if (isConflictMessage) {
+      return new URL(`${baseUrl}/conflict-chat-stream`);
+    }
+    return new URL(`${baseUrl}/chat-stream`);
+  }, [isConflictMessage]);
+
   const { text, status } = useStream(
     api.streaming.getStreamBody,
-    new URL(`https://precise-possum-310.convex.site/chat-stream`),
+    streamingUrl,
     isDriven,
     message.responseStreamId as StreamId,
   );
@@ -36,6 +48,7 @@ export function ServerMessage({
 
   useEffect(() => {
     if (!text) return;
+    console.log("text", text);
     scrollToBottom();
   }, [text, scrollToBottom]);
 

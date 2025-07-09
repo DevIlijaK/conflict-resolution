@@ -9,6 +9,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import Link from "next/link";
 import { type Id } from "convex/_generated/dataModel";
+import { useRouter } from "next/navigation";
 
 export default function ConflictInterview({
   params,
@@ -16,6 +17,7 @@ export default function ConflictInterview({
   params: Promise<{ id: Id<"conflicts"> }>;
 }) {
   const { id } = use(params);
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -42,9 +44,9 @@ export default function ConflictInterview({
     <div className="container mx-auto space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Invite Other Party</h1>
+          <h1 className="text-3xl font-bold">Conflict Interview</h1>
           <p className="text-muted-foreground">
-            Send an invitation to the other person involved in this conflict
+            Help me understand your conflict better through a conversation
           </p>
         </div>
         <Link href={`/conflict/${id}`}>
@@ -52,9 +54,12 @@ export default function ConflictInterview({
         </Link>
       </div>
 
+      {/* Interview Chat Section */}
+
+      {/* Invitation Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Send Invitation</CardTitle>
+          <CardTitle>Invite Other Party</CardTitle>
         </CardHeader>
         <CardContent>
           {emailSent ? (

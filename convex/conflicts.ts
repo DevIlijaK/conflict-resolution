@@ -1,5 +1,6 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
+import { api } from "./_generated/api";
 import { mustGetCurrentUser } from "./users";
 
 // Create a new conflict (creator only)
@@ -63,14 +64,34 @@ export const getConflict = query({
   },
 });
 
+// Internal query to get conflict without authentication (for actions)
+export const getConflictInternal = internalQuery({
+  args: {
+    conflictId: v.id("conflicts"),
+    requestingUserId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    // Query-level filtering - much more efficient!
+    return await ctx.db
+      .query("conflicts")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("_id"), args.conflictId),
+          q.eq(q.field("createdBy"), args.requestingUserId),
+        ),
+      )
+      .unique();
+  },
+});
+
 // Update conflict status
 export const updateConflictStatus = mutation({
   args: {
     conflictId: v.id("conflicts"),
     status: v.union(
       v.literal("draft"),
+      v.literal("interview"),
       v.literal("in_progress"),
-      v.literal("analyzing"),
       v.literal("resolved"),
       v.literal("archived"),
     ),
@@ -100,86 +121,8 @@ export const updateConflictStatus = mutation({
   },
 });
 
-// Add creator interview responses
-export const addCreatorResponses = mutation({
-  args: {
-    conflictId: v.id("conflicts"),
-    responses: v.array(
-      v.object({
-        question: v.string(),
-        answer: v.string(),
-        timestamp: v.number(),
-      }),
-    ),
-  },
-  handler: async (ctx, args) => {
-    const user = await mustGetCurrentUser(ctx);
-    const conflict = await ctx.db.get(args.conflictId);
-
-    if (!conflict) {
-      throw new Error("Conflict not found");
-    }
-
-    // Verify user is the creator
-    if (conflict.createdBy !== user._id) {
-      throw new Error(
-        "Access denied: Only the conflict creator can add responses",
-      );
-    }
-
-    await ctx.db.patch(args.conflictId, {
-      creatorResponses: args.responses,
-      status: "in_progress",
-      updatedAt: Date.now(),
-    });
-
-    return null;
-  },
-});
-
-// Add AI analysis to conflict (simplified for creator only)
-export const addAnalysis = mutation({
-  args: {
-    conflictId: v.id("conflicts"),
-    analysis: v.object({
-      rootCauseAnalysis: v.string(),
-      creatorPerspective: v.string(),
-      actionableSteps: v.array(v.string()),
-      communicationStrategies: v.array(v.string()),
-    }),
-  },
-  handler: async (ctx, args) => {
-    const user = await mustGetCurrentUser(ctx);
-    const conflict = await ctx.db.get(args.conflictId);
-
-    if (!conflict) {
-      throw new Error("Conflict not found");
-    }
-
-    // Only creator can add analysis
-    if (conflict.createdBy !== user._id) {
-      throw new Error(
-        "Access denied: Only the conflict creator can add analysis",
-      );
-    }
-
-    await ctx.db.patch(args.conflictId, {
-      analysis: {
-        ...args.analysis,
-        generatedAt: Date.now(),
-      },
-      status: "resolved",
-      updatedAt: Date.now(),
-    });
-
-    return null;
-  },
-});
-
-// Delete a conflict
 export const deleteConflict = mutation({
   args: { conflictId: v.id("conflicts") },
-  returns: v.null(),
   handler: async (ctx, args) => {
     const user = await mustGetCurrentUser(ctx);
     const conflict = await ctx.db.get(args.conflictId);
@@ -250,6 +193,7 @@ export const getConflictStats = query({
   returns: v.object({
     total: v.number(),
     draft: v.number(),
+    interview: v.number(),
     inProgress: v.number(),
     resolved: v.number(),
     archived: v.number(),
@@ -265,6 +209,8 @@ export const getConflictStats = query({
     const stats = {
       total: createdConflicts.length,
       draft: createdConflicts.filter((c) => c.status === "draft").length,
+      interview: createdConflicts.filter((c) => c.status === "interview")
+        .length,
       inProgress: createdConflicts.filter((c) => c.status === "in_progress")
         .length,
       resolved: createdConflicts.filter((c) => c.status === "resolved").length,
@@ -297,13 +243,34 @@ export const sendInvitation = mutation({
       );
     }
 
-    // TODO: Implement actual email sending logic
-    // For now, just log the invitation
-    console.log(
-      `Sending invitation for conflict ${args.conflictId} to ${args.email}`,
-    );
-    console.log(`Conflict: ${conflict.title}`);
-    console.log(`From: ${user.clerkUser.primaryEmailAddress?.emailAddress}`);
+    // Extract sender email from Clerk user data with better fallback handling
+    let senderEmail = "";
+
+    // Try different ways to get the email from Clerk user data
+    if (user.clerkUser.primaryEmailAddress?.emailAddress) {
+      senderEmail = user.clerkUser.primaryEmailAddress.emailAddress;
+    } else if (
+      user.clerkUser.email_addresses &&
+      user.clerkUser.email_addresses.length > 0
+    ) {
+      senderEmail = user.clerkUser.email_addresses[0].email_address;
+    } else if (user.clerkUser.email) {
+      senderEmail = user.clerkUser.email;
+    }
+
+    if (!senderEmail) {
+      throw new Error(
+        "Unable to find sender email address. Please ensure your email is properly configured in your account.",
+      );
+    }
+
+    // Schedule the email sending action with user information
+    await ctx.scheduler.runAfter(0, api.email.sendInvitationEmail, {
+      conflictId: args.conflictId,
+      email: args.email,
+      senderUserId: user._id,
+      senderEmail: senderEmail,
+    });
 
     return null;
   },

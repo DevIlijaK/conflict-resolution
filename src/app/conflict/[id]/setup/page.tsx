@@ -1,10 +1,11 @@
 "use client";
 
 import { use } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import { type Id } from "convex/_generated/dataModel";
+import { ConflictChatWindow } from "~/components/chat-window";
+import { useRouter } from "next/navigation";
 
 export default function ConflictSetup({
   params,
@@ -12,9 +13,15 @@ export default function ConflictSetup({
   params: Promise<{ id: Id<"conflicts"> }>;
 }) {
   const { id } = use(params);
+  const router = useRouter();
+
+  const handleInterviewComplete = () => {
+    // Navigate to the next step in the conflict resolution process
+    router.push(`/conflict/${id}/interview`);
+  };
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
+    <div className="flex h-full w-full flex-col gap-6 p-6 sm:w-[768px]">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Setup Conflict</h1>
@@ -27,35 +34,13 @@ export default function ConflictSetup({
         </Link>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Step 1: Setup</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              This is where you would configure the conflict details and invite
-              participants.
-            </p>
-
-            <div className="space-y-2">
-              <h3 className="font-medium">TODO: Implement</h3>
-              <ul className="text-muted-foreground space-y-1 text-sm">
-                <li>• Participant invitation form</li>
-                <li>• Conflict category selection</li>
-                <li>• Privacy settings</li>
-                <li>• Notification preferences</li>
-              </ul>
-            </div>
-
-            <div className="pt-4">
-              <Link href={`/conflict/${id}/interview`}>
-                <Button>Continue to Interview</Button>
-              </Link>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="min-h-0 flex-1">
+        <h2 className="text-lg font-bold">AI Interview Assistant</h2>
+        <ConflictChatWindow
+          conflictId={id}
+          onInterviewComplete={handleInterviewComplete}
+        />
+      </div>
     </div>
   );
 }

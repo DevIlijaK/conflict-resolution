@@ -13,37 +13,29 @@ export default defineSchema({
     responseStreamId: StreamIdValidator,
   }).index("by_stream", ["responseStreamId"]),
 
+  // Interview messages for conflicts
+  conflictMessages: defineTable({
+    conflictId: v.id("conflicts"),
+    prompt: v.string(),
+    responseStreamId: StreamIdValidator,
+    userId: v.id("users"),
+  })
+    .index("by_conflict", ["conflictId"])
+    .index("by_stream", ["responseStreamId"]),
+
   conflicts: defineTable({
     title: v.string(),
     description: v.string(),
     createdBy: v.id("users"), // The user who created the conflict
     status: v.union(
       v.literal("draft"),
+      v.literal("interview"),
       v.literal("in_progress"),
-      v.literal("analyzing"),
       v.literal("resolved"),
       v.literal("archived"),
     ),
-    // AI Interview responses from creator
-    creatorResponses: v.optional(
-      v.array(
-        v.object({
-          question: v.string(),
-          answer: v.string(),
-          timestamp: v.number(),
-        }),
-      ),
-    ),
-    // AI Analysis results (based on creator responses for now)
-    analysis: v.optional(
-      v.object({
-        rootCauseAnalysis: v.string(),
-        creatorPerspective: v.string(),
-        actionableSteps: v.array(v.string()),
-        communicationStrategies: v.array(v.string()),
-        generatedAt: v.number(),
-      }),
-    ),
+    // Interview completion status
+    interviewCompleted: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
