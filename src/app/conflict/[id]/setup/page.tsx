@@ -4,8 +4,8 @@ import { use } from "react";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import { type Id } from "convex/_generated/dataModel";
-import { ConflictChatWindow } from "~/components/chat-window";
 import { useRouter } from "next/navigation";
+import { ConflictChatWindow } from "~/components/chat-window";
 
 export default function ConflictSetup({
   params,
@@ -35,7 +35,6 @@ export default function ConflictSetup({
       </div>
 
       <div className="min-h-0 flex-1">
-        <h2 className="text-lg font-bold">AI Interview Assistant</h2>
         <ConflictChatWindow
           conflictId={id}
           onInterviewComplete={handleInterviewComplete}

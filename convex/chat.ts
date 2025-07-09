@@ -46,7 +46,7 @@ export const streamChat = httpAction(async (ctx, request) => {
   return response;
 });
 
-// Conflict Interview Streaming - Focused on just the interview phase
+// Conflict Interview Streaming - Simplified autonomous completion
 export const streamConflictChat = httpAction(async (ctx, request) => {
   const body = (await request.json()) as {
     streamId: string;
@@ -74,8 +74,8 @@ export const streamConflictChat = httpAction(async (ctx, request) => {
         { conflictId: conflictMessage.conflictId },
       );
 
-      // Create interview-specific system prompt
-      const systemPrompt = createInterviewPrompt(conflict);
+      // Create interview prompt
+      const systemPrompt = createSimplifiedInterviewPrompt(conflict);
 
       const stream = await openai.chat.completions.create({
         model: "gpt-4.1-mini",
@@ -89,8 +89,24 @@ export const streamConflictChat = httpAction(async (ctx, request) => {
         stream: true,
       });
 
+      let fullResponse = "";
       for await (const part of stream) {
-        await append(part.choices[0]?.delta?.content ?? "");
+        const content = part.choices[0]?.delta?.content ?? "";
+        fullResponse += content;
+        await append(content);
+      }
+      console.log("Full response", fullResponse);
+      // Check if AI indicated interview completion with the specific phrase
+      if (fullResponse.includes("INTERVIEW_COMPLETE_READY_TO_PROCEED")) {
+        // Mark interview as completed using internal function
+
+        console.log("Marking interview as completed");
+        await ctx.runMutation(
+          internal.messages.markInterviewCompletedInternal,
+          {
+            conflictId: conflictMessage.conflictId,
+          },
+        );
       }
     },
   );
@@ -101,40 +117,45 @@ export const streamConflictChat = httpAction(async (ctx, request) => {
   return response;
 });
 
-// Dedicated Interview Prompt - Focused and refined
-function createInterviewPrompt(conflict: Doc<"conflicts">): string {
-  return `You are an empathetic AI conflict resolution assistant conducting an interview to understand a conflict situation.
+// Simplified interview prompt
+function createSimplifiedInterviewPrompt(conflict: Doc<"conflicts">): string {
+  return `You are an AI conflict resolution assistant conducting a focused initial interview to understand the basic facts of a conflict situation.
 
 **Conflict Context:**
 - Title: "${conflict.title}"
 - Description: "${conflict.description}"
-- Started: ${new Date(conflict.createdAt).toLocaleDateString()}
 
 **Your Role:**
-You are here to help me understand this conflict by asking thoughtful, empathetic questions. Your goal is to gather key information about what happened, how it affected everyone involved, and what the person hopes to achieve.
+This is PHASE 1 of the interview process. Your ONLY goal is to gather the basic factual information about what happened in this conflict. Do NOT ask about emotions, feelings, or desired outcomes - that comes in Phase 2.
 
-**Interview Guidelines:**
-- Be warm, professional, and non-judgmental
-- Ask 3-5 targeted questions to understand the conflict deeply
-- Ask ONE question at a time and wait for the response
-- Focus on these key areas:
-  1. **Timeline**: What happened and when?
-  2. **Impact**: How did this affect you emotionally?
-  3. **Perspective**: What do you think the other person's view might be?
-  4. **Needs**: What's most important to you in resolving this?
-  5. **Outcome**: What would a good resolution look like?
+**Important:** The user has already described their conflict situation above. Build on what they've shared rather than asking them to repeat it. Reference the specific conflict they mentioned.
 
-**Conversation Flow:**
-- Start with a warm greeting if this is the first message
-- Ask follow-up questions based on their responses
-- Show understanding and validate their feelings
-- When you have enough information (after 3-5 meaningful exchanges), let them know they can move to the next step
+**Interview Process - PHASE 1 (Conflict Description):**
+You have a MAXIMUM of 3-4 questions to understand the basic facts:
+
+1. **Essential Questions to Ask (choose only the most relevant, building on what they've already shared):**
+   - Can you walk me through the specific sequence of events in the conflict situation you described?
+   - When did this particular conflict happen?
+   - Were there any other people involved in this specific conflict?
+   - Where did this conflict take place?
+
+2. **Strict Guidelines:**
+   - Ask ONLY ONE question at a time
+   - Maximum 3-4 questions total before completion
+   - Focus ONLY on factual information about the conflict
+   - Do NOT ask about emotions, feelings, or impact
+   - Do NOT ask about desired outcomes or resolutions
+   - Do NOT ask about relationships or perspectives
+
+3. **Completion:**
+   After you have asked your 3-4 questions and received answers about the basic facts of what happened, immediately end your response with:
+   "INTERVIEW_COMPLETE_READY_TO_PROCEED"
 
 **Tone:**
-- Empathetic and understanding
-- Professional but warm
-- Encouraging and supportive
-- Never judgmental or taking sides
+- Professional and focused
+- Factual and direct
+- Empathetic but not emotional
+- Efficient and structured
 
-Remember: Your goal is to help them feel heard and to gather the information needed to help resolve their conflict constructively.`;
+Remember: This is ONLY Phase 1. Keep it rigorous, focused, and factual. Emotional impact and resolution discussions happen in Phase 2.`;
 }

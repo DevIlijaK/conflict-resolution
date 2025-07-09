@@ -76,7 +76,7 @@ export default function ConflictDashboard({
                 <p className="text-muted-foreground text-sm">
                   Complete your interview with the AI
                 </p>
-                {conflict.creatorResponses && (
+                {conflict.interviewCompleted && (
                   <p className="mt-1 text-xs text-green-600">
                     ✓ Interview completed
                   </p>
@@ -84,7 +84,7 @@ export default function ConflictDashboard({
               </div>
               <Link href={`/conflict/${id}/interview`}>
                 <Button variant="outline">
-                  {conflict.creatorResponses
+                  {conflict.interviewCompleted
                     ? "Review Interview"
                     : "Start Interview"}
                 </Button>
@@ -111,15 +111,20 @@ export default function ConflictDashboard({
                 <p className="text-muted-foreground text-sm">
                   View AI analysis and recommendations
                 </p>
-                {conflict.analysis && (
+                {conflict.status === "resolved" && (
                   <p className="mt-1 text-xs text-green-600">
                     ✓ Analysis available
                   </p>
                 )}
               </div>
               <Link href={`/conflict/${id}/resolution`}>
-                <Button variant="outline" disabled={!conflict.analysis}>
-                  {conflict.analysis ? "View Resolution" : "Not Ready"}
+                <Button
+                  variant="outline"
+                  disabled={conflict.status !== "resolved"}
+                >
+                  {conflict.status === "resolved"
+                    ? "View Resolution"
+                    : "Not Ready"}
                 </Button>
               </Link>
             </div>

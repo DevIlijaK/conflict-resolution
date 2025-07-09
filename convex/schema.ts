@@ -19,9 +19,15 @@ export default defineSchema({
     prompt: v.string(),
     responseStreamId: StreamIdValidator,
     userId: v.id("users"),
+    type: v.union(
+      v.literal("interview"),
+      v.literal("owner_analysis"),
+      v.literal("participant_analysis"),
+    ),
   })
     .index("by_conflict", ["conflictId"])
-    .index("by_stream", ["responseStreamId"]),
+    .index("by_stream", ["responseStreamId"])
+    .index("by_conflict_and_type", ["conflictId", "type"]),
 
   conflicts: defineTable({
     title: v.string(),

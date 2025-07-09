@@ -31,8 +31,8 @@ import Link from "next/link";
 
 type ConflictStatus =
   | "draft"
+  | "interview"
   | "in_progress"
-  | "analyzing"
   | "resolved"
   | "archived";
 
@@ -117,7 +117,15 @@ export default function ConflictManager() {
     status: ConflictStatus,
   ) => {
     try {
-      await updateConflictStatus({ conflictId, status });
+      await updateConflictStatus({
+        conflictId,
+        status: status as
+          | "draft"
+          | "interview"
+          | "in_progress"
+          | "resolved"
+          | "archived",
+      });
     } catch (error) {
       console.error("Failed to update status:", error);
       alert("Failed to update status. Please try again.");
@@ -128,10 +136,10 @@ export default function ConflictManager() {
     switch (status) {
       case "draft":
         return "secondary";
+      case "interview":
+        return "outline";
       case "in_progress":
         return "default";
-      case "analyzing":
-        return "outline";
       case "resolved":
         return "destructive";
       case "archived":
@@ -317,8 +325,8 @@ export default function ConflictManager() {
                         className="rounded border px-2 py-1 text-xs"
                       >
                         <option value="draft">Draft</option>
+                        <option value="interview">Interview</option>
                         <option value="in_progress">In Progress</option>
-                        <option value="analyzing">Analyzing</option>
                         <option value="resolved">Resolved</option>
                         <option value="archived">Archived</option>
                       </select>
@@ -330,16 +338,9 @@ export default function ConflictManager() {
                     {conflict.description}
                   </p>
 
-                  {conflict.creatorResponses && (
+                  {conflict.interviewCompleted && (
                     <div className="text-muted-foreground mt-3 text-xs">
-                      ✓ Interview completed ({conflict.creatorResponses.length}{" "}
-                      responses)
-                    </div>
-                  )}
-
-                  {conflict.analysis && (
-                    <div className="mt-2 text-xs text-green-600">
-                      ✓ Analysis available
+                      ✓ Interview completed
                     </div>
                   )}
                 </CardContent>

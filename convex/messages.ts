@@ -1,4 +1,9 @@
-import { query, mutation, internalQuery } from "./_generated/server";
+import {
+  query,
+  mutation,
+  internalQuery,
+  internalMutation,
+} from "./_generated/server";
 import { type StreamId } from "@convex-dev/persistent-text-streaming";
 import { v } from "convex/values";
 import { streamingComponent } from "./streaming";
@@ -88,6 +93,7 @@ export const sendConflictMessage = mutation({
       prompt: args.prompt,
       responseStreamId,
       userId: user._id,
+      type: "interview",
     });
 
     // Update conflict status to interview when first message is sent
@@ -170,6 +176,32 @@ export const markInterviewCompleted = mutation({
       throw new Error("Access denied: You can only update your own conflicts");
     }
 
+    await ctx.db.patch(args.conflictId, {
+      interviewCompleted: true,
+      status: "in_progress",
+      updatedAt: Date.now(),
+    });
+
+    return null;
+  },
+});
+
+// Internal version for AI completion - doesn't require user auth
+export const markInterviewCompletedInternal = internalMutation({
+  args: {
+    conflictId: v.id("conflicts"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    // Get conflict to verify it exists
+    const conflict = await ctx.db.get(args.conflictId);
+    if (!conflict) {
+      throw new Error("Conflict not found");
+    }
+
+    console.log("Marking interview as completed", args.conflictId);
+
+    // Update conflict status
     await ctx.db.patch(args.conflictId, {
       interviewCompleted: true,
       status: "in_progress",
