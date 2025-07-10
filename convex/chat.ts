@@ -160,12 +160,12 @@ export const streamConflictChat = httpAction(async (ctx, request) => {
       // Mark interview as completed if the AI called the function
       if (interviewCompleted) {
         console.log("Marking interview as completed");
-        await ctx.runMutation(
-          internal.messages.markInterviewCompletedInternal,
-          {
-            conflictId: conflictMessage.conflictId,
+        await ctx.runMutation(internal.messages.updateConflictInternal, {
+          conflictId: conflictMessage.conflictId,
+          updates: {
+            status: "in_progress",
           },
-        );
+        });
       }
     },
   );

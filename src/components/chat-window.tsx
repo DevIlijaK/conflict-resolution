@@ -15,7 +15,7 @@ import { api } from "convex/_generated/api";
 import dynamic from "next/dynamic";
 import { useWindowSize } from "~/lib/utils";
 import { Button } from "./ui/button";
-import { Mic, Paperclip, Send, Sparkles, CheckCircle } from "lucide-react";
+import { Mic, Paperclip, Send, Sparkles } from "lucide-react";
 import { cx } from "class-variance-authority";
 import { type Id } from "convex/_generated/dataModel";
 
@@ -26,10 +26,8 @@ const ServerMessage = dynamic(
 
 export function ConflictChatWindow({
   conflictId,
-  onInterviewComplete,
 }: {
   conflictId: Id<"conflicts">;
-  onInterviewComplete?: () => void;
 }) {
   const [drivenIds, setDrivenIds] = useState<Set<string>>(new Set());
   const [isStreaming, setIsStreaming] = useState(false);
@@ -41,7 +39,6 @@ export function ConflictChatWindow({
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const sendMessage = useMutation(api.messages.sendConflictMessage);
-  const markCompleted = useMutation(api.messages.markInterviewCompleted);
 
   const focusInput = useCallback(() => {
     inputRef.current?.focus();
@@ -76,11 +73,6 @@ export function ConflictChatWindow({
     setIsStreaming(true);
   }, [input, sendMessage, conflictId]);
 
-  const handleCompleteInterview = useCallback(async () => {
-    await markCompleted({ conflictId });
-    onInterviewComplete?.();
-  }, [markCompleted, conflictId, onInterviewComplete]);
-
   useEffect(() => {
     scrollToBottom();
   }, [windowSize, scrollToBottom]);
@@ -98,25 +90,6 @@ export function ConflictChatWindow({
 
   return (
     <div className="flex h-full flex-1 flex-col bg-white">
-      {/* Header */}
-      <div className="border-b bg-gray-50 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">Interview Assistant</h3>
-          {messages.length > 0 && (
-            <Button
-              onClick={handleCompleteInterview}
-              variant="outline"
-              size="sm"
-              className="text-green-600 hover:bg-green-50"
-            >
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Complete Interview
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Messages */}
       <div
         ref={messageContainerRef}
         className="flex-1 overflow-y-auto px-4 py-6 md:px-8 lg:px-12"

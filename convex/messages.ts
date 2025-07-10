@@ -162,36 +162,24 @@ export const getInterviewHistory = internalQuery({
   },
 });
 
-// Mark interview as completed
-export const markInterviewCompleted = mutation({
+export const updateConflictInternal = internalMutation({
   args: {
     conflictId: v.id("conflicts"),
+    updates: v.object({
+      status: v.optional(
+        v.union(
+          v.literal("draft"),
+          v.literal("interview"),
+          v.literal("in_progress"),
+          v.literal("resolved"),
+          v.literal("archived"),
+        ),
+      ),
+      title: v.optional(v.string()),
+      description: v.optional(v.string()),
+      updatedAt: v.optional(v.number()),
+    }),
   },
-  handler: async (ctx, args) => {
-    const user = await mustGetCurrentUser(ctx);
-
-    // Verify user has access to this conflict
-    const conflict = await ctx.db.get(args.conflictId);
-    if (!conflict || conflict.createdBy !== user._id) {
-      throw new Error("Access denied: You can only update your own conflicts");
-    }
-
-    await ctx.db.patch(args.conflictId, {
-      interviewCompleted: true,
-      status: "in_progress",
-      updatedAt: Date.now(),
-    });
-
-    return null;
-  },
-});
-
-// Internal version for AI completion - doesn't require user auth
-export const markInterviewCompletedInternal = internalMutation({
-  args: {
-    conflictId: v.id("conflicts"),
-  },
-  returns: v.null(),
   handler: async (ctx, args) => {
     // Get conflict to verify it exists
     const conflict = await ctx.db.get(args.conflictId);
@@ -199,16 +187,23 @@ export const markInterviewCompletedInternal = internalMutation({
       throw new Error("Conflict not found");
     }
 
-    console.log("Marking interview as completed", args.conflictId);
+    console.log(
+      "Updating conflict",
+      args.conflictId,
+      "with updates:",
+      args.updates,
+    );
 
-    // Update conflict status
-    await ctx.db.patch(args.conflictId, {
-      interviewCompleted: true,
-      status: "in_progress",
-      updatedAt: Date.now(),
-    });
+    // Always update the updatedAt timestamp
+    const updatesWithTimestamp = {
+      ...args.updates,
+      updatedAt: args.updates.updatedAt ?? Date.now(),
+    };
 
-    return null;
+    // Update the conflict
+    await ctx.db.patch(args.conflictId, updatesWithTimestamp);
+
+    return updatesWithTimestamp;
   },
 });
 

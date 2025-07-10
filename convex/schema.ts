@@ -40,8 +40,6 @@ export default defineSchema({
       v.literal("resolved"),
       v.literal("archived"),
     ),
-    // Interview completion status
-    interviewCompleted: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

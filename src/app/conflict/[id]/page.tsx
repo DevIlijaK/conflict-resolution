@@ -8,6 +8,7 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import Link from "next/link";
 import { type Id } from "convex/_generated/dataModel";
+import { getCompletionStatus } from "~/lib/conflict-utils";
 
 export default function ConflictDashboard({
   params,
@@ -36,6 +37,9 @@ export default function ConflictDashboard({
     );
   }
 
+  // Get completion status for all stages
+  const completion = getCompletionStatus(conflict.status);
+
   return (
     <div className="container mx-auto space-y-6 p-6">
       <div className="flex items-center justify-between">
@@ -59,6 +63,11 @@ export default function ConflictDashboard({
                 <p className="text-muted-foreground text-sm">
                   Configure conflict details and invite participant
                 </p>
+                {completion.draft && (
+                  <p className="mt-1 text-xs text-green-600">
+                    ✓ Setup completed
+                  </p>
+                )}
               </div>
               <Link href={`/conflict/${id}/setup`}>
                 <Button variant="outline">
@@ -76,7 +85,7 @@ export default function ConflictDashboard({
                 <p className="text-muted-foreground text-sm">
                   Complete your interview with the AI
                 </p>
-                {conflict.interviewCompleted && (
+                {completion.interview && (
                   <p className="mt-1 text-xs text-green-600">
                     ✓ Interview completed
                   </p>
@@ -84,7 +93,7 @@ export default function ConflictDashboard({
               </div>
               <Link href={`/conflict/${id}/interview`}>
                 <Button variant="outline">
-                  {conflict.interviewCompleted
+                  {completion.interview
                     ? "Review Interview"
                     : "Start Interview"}
                 </Button>
@@ -98,6 +107,11 @@ export default function ConflictDashboard({
                 <p className="text-muted-foreground text-sm">
                   Waiting for participant and AI analysis
                 </p>
+                {completion.inProgress && (
+                  <p className="mt-1 text-xs text-green-600">
+                    ✓ Analysis completed
+                  </p>
+                )}
               </div>
               <Link href={`/conflict/${id}/waiting`}>
                 <Button variant="outline">View Status</Button>
@@ -111,20 +125,15 @@ export default function ConflictDashboard({
                 <p className="text-muted-foreground text-sm">
                   View AI analysis and recommendations
                 </p>
-                {conflict.status === "resolved" && (
+                {completion.resolved && (
                   <p className="mt-1 text-xs text-green-600">
-                    ✓ Analysis available
+                    ✓ Resolution available
                   </p>
                 )}
               </div>
               <Link href={`/conflict/${id}/resolution`}>
-                <Button
-                  variant="outline"
-                  disabled={conflict.status !== "resolved"}
-                >
-                  {conflict.status === "resolved"
-                    ? "View Resolution"
-                    : "Not Ready"}
+                <Button variant="outline" disabled={!completion.resolved}>
+                  {completion.resolved ? "View Resolution" : "Not Ready"}
                 </Button>
               </Link>
             </div>

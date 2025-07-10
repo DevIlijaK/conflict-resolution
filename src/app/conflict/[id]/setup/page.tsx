@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { ConflictChatWindow } from "~/components/chat-window";
 import { useQuery } from "convex/react";
 import { api } from "~/convex/_generated/api";
+import { isInterviewCompleted } from "~/lib/conflict-utils";
 
 export default function ConflictSetup({
   params,
@@ -25,10 +26,7 @@ export default function ConflictSetup({
     return <div>Conflict not found</div>;
   }
 
-  const handleInterviewComplete = () => {
-    // Navigate to the next step in the conflict resolution process
-    router.push(`/conflict/${id}/interview`);
-  };
+  const interviewCompleted = isInterviewCompleted(conflict.status);
 
   return (
     <div className="flex h-full w-full flex-col gap-6 p-6 sm:w-[768px]">
@@ -43,12 +41,14 @@ export default function ConflictSetup({
           <Button variant="outline">Back to Dashboard</Button>
         </Link>
       </div>
+      <div>
+        <h2>
+          {interviewCompleted ? "Interview Completed" : "Interview In Progress"}
+        </h2>
+      </div>
 
       <div className="min-h-0 flex-1">
-        <ConflictChatWindow
-          conflictId={id}
-          onInterviewComplete={handleInterviewComplete}
-        />
+        <ConflictChatWindow conflictId={id} />
       </div>
     </div>
   );
