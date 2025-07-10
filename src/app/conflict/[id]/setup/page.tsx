@@ -6,6 +6,8 @@ import Link from "next/link";
 import { type Id } from "convex/_generated/dataModel";
 import { useRouter } from "next/navigation";
 import { ConflictChatWindow } from "~/components/chat-window";
+import { useQuery } from "convex/react";
+import { api } from "~/convex/_generated/api";
 
 export default function ConflictSetup({
   params,
@@ -14,6 +16,14 @@ export default function ConflictSetup({
 }) {
   const { id } = use(params);
   const router = useRouter();
+
+  const conflict = useQuery(api.conflicts.getConflict, {
+    conflictId: id,
+  });
+
+  if (!conflict) {
+    return <div>Conflict not found</div>;
+  }
 
   const handleInterviewComplete = () => {
     // Navigate to the next step in the conflict resolution process

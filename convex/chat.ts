@@ -75,7 +75,7 @@ export const streamConflictChat = httpAction(async (ctx, request) => {
       );
 
       // Create interview prompt
-      const systemPrompt = createSimplifiedInterviewPrompt(conflict);
+      const systemPrompt = createInterviewPrompt(conflict);
 
       const stream = await openai.chat.completions.create({
         model: "gpt-4.1-mini",
@@ -86,20 +86,79 @@ export const streamConflictChat = httpAction(async (ctx, request) => {
           },
           ...messages,
         ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "complete_interview",
+              description:
+                "Call this function when the interview is complete and ready to proceed to the next phase",
+              parameters: {
+                type: "object",
+                properties: {
+                  completion_message: {
+                    type: "string",
+                    description:
+                      "A final message to show the user indicating the interview is complete",
+                  },
+                },
+                required: ["completion_message"],
+              },
+            },
+          },
+        ],
+        tool_choice: "auto",
         stream: true,
       });
 
-      let fullResponse = "";
-      for await (const part of stream) {
-        const content = part.choices[0]?.delta?.content ?? "";
-        fullResponse += content;
-        await append(content);
-      }
-      console.log("Full response", fullResponse);
-      // Check if AI indicated interview completion with the specific phrase
-      if (fullResponse.includes("INTERVIEW_COMPLETE_READY_TO_PROCEED")) {
-        // Mark interview as completed using internal function
+      let interviewCompleted = false;
+      const pendingFunctionCall = {
+        name: "",
+        arguments: "",
+      };
 
+      for await (const part of stream) {
+        // Handle regular content
+        if (part.choices[0]?.delta?.content) {
+          const content = part.choices[0].delta.content;
+          await append(content);
+        }
+
+        // Handle function calls - they come in chunks during streaming
+        if (part.choices[0]?.delta?.tool_calls) {
+          const toolCalls = part.choices[0].delta.tool_calls;
+          for (const toolCall of toolCalls) {
+            if (toolCall.function?.name) {
+              pendingFunctionCall.name = toolCall.function.name;
+            }
+            if (toolCall.function?.arguments) {
+              pendingFunctionCall.arguments += toolCall.function.arguments;
+            }
+          }
+        }
+
+        // Check if this is the completion of the stream
+        if (part.choices[0]?.finish_reason === "tool_calls") {
+          // Process the completed function call
+          if (pendingFunctionCall.name === "complete_interview") {
+            interviewCompleted = true;
+
+            // Parse the completion message and append it to the stream
+            try {
+              const args = JSON.parse(pendingFunctionCall.arguments ?? "{}");
+              if (args.completion_message) {
+                await append(args.completion_message);
+              }
+            } catch (e) {
+              console.error("Error parsing function arguments:", e);
+            }
+          }
+          break; // Exit the loop when function call is complete
+        }
+      }
+
+      // Mark interview as completed if the AI called the function
+      if (interviewCompleted) {
         console.log("Marking interview as completed");
         await ctx.runMutation(
           internal.messages.markInterviewCompletedInternal,
@@ -118,7 +177,7 @@ export const streamConflictChat = httpAction(async (ctx, request) => {
 });
 
 // Simplified interview prompt
-function createSimplifiedInterviewPrompt(conflict: Doc<"conflicts">): string {
+function createInterviewPrompt(conflict: Doc<"conflicts">): string {
   return `You are an AI conflict resolution assistant conducting a focused initial interview to understand the basic facts of a conflict situation.
 
 **Conflict Context:**
@@ -148,8 +207,7 @@ You have a MAXIMUM of 3-4 questions to understand the basic facts:
    - Do NOT ask about relationships or perspectives
 
 3. **Completion:**
-   After you have asked your 3-4 questions and received answers about the basic facts of what happened, immediately end your response with:
-   "INTERVIEW_COMPLETE_READY_TO_PROCEED"
+   After you have asked your 3-4 questions and received answers about the basic facts of what happened, call the "complete_interview" function with a friendly completion message for the user (like "Thank you for providing those details. I now have a good understanding of the situation and we're ready to move to the next phase of the process.").
 
 **Tone:**
 - Professional and focused
