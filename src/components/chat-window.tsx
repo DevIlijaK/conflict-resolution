@@ -11,18 +11,13 @@ import React, {
   type KeyboardEvent,
 } from "react";
 import MessageItem from "./message-item";
+import { ServerMessage } from "./server-message";
 import { api } from "convex/_generated/api";
-import dynamic from "next/dynamic";
 import { useWindowSize } from "~/lib/utils";
 import { Button } from "./ui/button";
-import { Mic, Paperclip, Send, Sparkles } from "lucide-react";
+import { Send } from "lucide-react";
 import { cx } from "class-variance-authority";
 import { type Id } from "convex/_generated/dataModel";
-
-const ServerMessage = dynamic(
-  () => import("./server-message").then((mod) => mod.ServerMessage),
-  { ssr: false },
-);
 
 export function ConflictChatWindow({
   conflictId,
@@ -37,7 +32,7 @@ export function ConflictChatWindow({
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageContainerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const sendMessage = useMutation(api.messages.sendConflictMessage);
 
   const focusInput = useCallback(() => {
@@ -89,69 +84,59 @@ export function ConflictChatWindow({
   };
 
   return (
-    <div className="flex h-full flex-1 flex-col bg-white">
+    <div className="flex h-full min-h-[60vh] flex-1 flex-col bg-white">
       <div
         ref={messageContainerRef}
-        className="flex-1 overflow-y-auto px-4 py-6 md:px-8 lg:px-12"
+        className="flex-1 overflow-y-auto px-2 py-4 md:px-4"
       >
-        <div className="mx-auto w-full max-w-5xl space-y-6">
+        <div className="mx-auto w-full max-w-2xl space-y-6">
           {messages.length === 0 && (
             <div className="space-y-2 text-center text-gray-500">
               <p>
-                👋 Hi! I&apos;m here to help understand your conflict better.
+                The assistant will ask questions to learn what happened—who was
+                involved, what was said or done, and in what order.
               </p>
               <p>
-                Share what happened, and I&apos;ll ask some questions to help
-                clarify the situation.
+                Start with a few sentences in your own words; it will follow up
+                one question at a time.
               </p>
             </div>
           )}
-          {messages.map((message) => {
-            // Map conflict message to expected format
-            const mappedMessage = {
-              _id: message._id as unknown as Id<"userMessages">,
-              _creationTime: message._creationTime,
-              responseStreamId: message.responseStreamId,
-              prompt: message.prompt,
-            };
-
-            return (
-              <React.Fragment key={message._id}>
-                <MessageItem message={mappedMessage} isUser={true}>
-                  {message.prompt}
-                </MessageItem>
-                <MessageItem message={mappedMessage} isUser={false}>
-                  <ServerMessage
-                    message={mappedMessage}
-                    isDriven={drivenIds.has(message._id)}
-                    stopStreaming={() => {
-                      setIsStreaming(false);
-                      focusInput();
-                    }}
-                    scrollToBottom={scrollToBottom}
-                    isConflictMessage={true}
-                  />
-                </MessageItem>
-              </React.Fragment>
-            );
-          })}
+          {messages.map((message) => (
+            <React.Fragment key={message._id}>
+              <MessageItem message={message} isUser={true}>
+                {message.prompt}
+              </MessageItem>
+              <MessageItem message={message} isUser={false}>
+                <ServerMessage
+                  message={message}
+                  isDriven={drivenIds.has(message._id)}
+                  stopStreaming={() => {
+                    setIsStreaming(false);
+                    focusInput();
+                  }}
+                  scrollToBottom={scrollToBottom}
+                />
+              </MessageItem>
+            </React.Fragment>
+          ))}
           <div ref={messagesEndRef} />
         </div>
       </div>
 
-      {/* Input */}
       <ChatInputContainer
-        className="sticky bottom-4"
+        className="mt-2"
         onClickSend={handleSend}
         isReady={input.length > 0 && !isStreaming}
       >
         <textarea
-          rows={4}
-          className="field-sizing-content max-h-36 grow resize-none overflow-y-auto border-none px-2 text-sm outline-none"
+          ref={inputRef}
+          rows={3}
+          className="field-sizing-content max-h-36 min-h-[4.5rem] grow resize-none overflow-y-auto border-none px-2 text-sm outline-none"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Share your thoughts about the conflict. I'll ask questions to understand better."
+          placeholder="Describe what happened. The assistant will ask follow-ups."
         />
       </ChatInputContainer>
     </div>
@@ -160,60 +145,29 @@ export function ConflictChatWindow({
 
 const ChatInputContainer: FC<
   PropsWithChildren<{
-    onClickSparkles?: () => void;
-    onClickPaperclip?: () => void;
-    onClickMic?: () => void;
     onClickSend?: () => void;
     className?: string;
     isReady?: boolean;
   }>
-> = ({
-  children,
-  onClickSparkles,
-  onClickPaperclip,
-  onClickMic,
-  onClickSend,
-  className,
-  isReady,
-}) => {
+> = ({ children, onClickSend, className, isReady }) => {
   return (
     <div
       className={cx(
-        "bg-background flex w-full flex-col gap-4 rounded-2xl border p-3 shadow-sm",
+        "bg-background flex w-full flex-col gap-2 rounded-2xl border p-3 shadow-sm",
         className,
       )}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex h-full items-end">
-          {onClickSparkles && (
-            <Button variant="ghost" size="icon" onClick={onClickSparkles}>
-              <Sparkles className="h-4 w-4" />
-            </Button>
-          )}
-          {onClickPaperclip && (
-            <Button variant="ghost" size="icon" onClick={onClickPaperclip}>
-              <Paperclip className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-
+      <div className="flex items-end gap-2">
         {children}
-
-        <div className="flex h-full items-end gap-2">
-          {onClickMic && (
-            <Button variant="ghost" size="icon" onClick={onClickMic}>
-              <Mic className="h-4 w-4" />
-            </Button>
-          )}
-          <Button
-            size="icon"
-            className="text-primary-foreground hover:bg-primary/90"
-            onClick={onClickSend}
-            disabled={!isReady}
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button
+          type="button"
+          size="icon"
+          className="text-primary-foreground hover:bg-primary/90 shrink-0"
+          onClick={onClickSend}
+          disabled={!isReady}
+        >
+          <Send className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );

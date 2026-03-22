@@ -1,7 +1,7 @@
 import { type Doc } from "convex/_generated/dataModel";
 
 type Props = {
-  message: Doc<"userMessages">;
+  message: Doc<"conflictMessages">;
   children: React.ReactNode;
   isUser: boolean;
 };

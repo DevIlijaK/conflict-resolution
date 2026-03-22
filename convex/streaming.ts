@@ -3,6 +3,7 @@ import {
   type StreamId,
   StreamIdValidator,
 } from "@convex-dev/persistent-text-streaming";
+import { v } from "convex/values";
 import { components } from "./_generated/api";
 import { query } from "./_generated/server";
 
@@ -14,6 +15,7 @@ export const getStreamBody = query({
   args: {
     streamId: StreamIdValidator,
   },
+  returns: v.any(),
   handler: async (ctx, args) => {
     return await streamingComponent.getStreamBody(
       ctx,

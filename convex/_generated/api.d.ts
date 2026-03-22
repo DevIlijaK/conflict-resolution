@@ -10,8 +10,10 @@
 
 import type * as chat from "../chat.js";
 import type * as conflicts from "../conflicts.js";
-import type * as email from "../email.js";
 import type * as http from "../http.js";
+import type * as intakeConstants from "../intakeConstants.js";
+import type * as intakeSummary from "../intakeSummary.js";
+import type * as intakeSummarySchema from "../intakeSummarySchema.js";
 import type * as messages from "../messages.js";
 import type * as streaming from "../streaming.js";
 import type * as users from "../users.js";
@@ -33,8 +35,10 @@ import type {
 declare const fullApi: ApiFromModules<{
   chat: typeof chat;
   conflicts: typeof conflicts;
-  email: typeof email;
   http: typeof http;
+  intakeConstants: typeof intakeConstants;
+  intakeSummary: typeof intakeSummary;
+  intakeSummarySchema: typeof intakeSummarySchema;
   messages: typeof messages;
   streaming: typeof streaming;
   users: typeof users;

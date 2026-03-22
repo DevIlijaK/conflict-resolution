@@ -8,12 +8,6 @@ export default defineSchema({
     color: v.string(),
   }).index("by_clerk_id", ["clerkUser.id"]),
 
-  userMessages: defineTable({
-    prompt: v.string(),
-    responseStreamId: StreamIdValidator,
-  }).index("by_stream", ["responseStreamId"]),
-
-  // Interview messages for conflicts
   conflictMessages: defineTable({
     conflictId: v.id("conflicts"),
     prompt: v.string(),
@@ -32,7 +26,7 @@ export default defineSchema({
   conflicts: defineTable({
     title: v.string(),
     description: v.string(),
-    createdBy: v.id("users"), // The user who created the conflict
+    createdBy: v.id("users"),
     status: v.union(
       v.literal("draft"),
       v.literal("interview"),
@@ -42,6 +36,8 @@ export default defineSchema({
     ),
     createdAt: v.number(),
     updatedAt: v.number(),
+    /** Set when intake chat is closed and the detailed AI summary has been written. */
+    intakeStepDone: v.optional(v.boolean()),
   })
     .index("by_creator", ["createdBy"])
     .index("by_status", ["status"])

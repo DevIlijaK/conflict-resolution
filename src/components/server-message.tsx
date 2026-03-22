@@ -1,3 +1,5 @@
+"use client";
+
 import { type StreamId } from "@convex-dev/persistent-text-streaming";
 import { useStream } from "@convex-dev/persistent-text-streaming/react";
 import { api } from "convex/_generated/api";
@@ -11,22 +13,16 @@ export function ServerMessage({
   isDriven,
   stopStreaming,
   scrollToBottom,
-  isConflictMessage = false,
 }: {
-  message: Doc<"userMessages">;
+  message: Doc<"conflictMessages">;
   isDriven: boolean;
   stopStreaming: () => void;
   scrollToBottom: () => void;
-  isConflictMessage?: boolean;
 }) {
-  // Choose the appropriate streaming endpoint
   const streamingUrl = useMemo(() => {
     const baseUrl = env.NEXT_PUBLIC_CONVEX_HTTP_URL;
-    if (isConflictMessage) {
-      return new URL(`${baseUrl}/conflict-chat-stream`);
-    }
-    return new URL(`${baseUrl}/chat-stream`);
-  }, [isConflictMessage]);
+    return new URL(`${baseUrl}/conflict-chat-stream`);
+  }, []);
 
   const { text, status } = useStream(
     api.streaming.getStreamBody,
@@ -48,7 +44,6 @@ export function ServerMessage({
 
   useEffect(() => {
     if (!text) return;
-    console.log("text", text);
     scrollToBottom();
   }, [text, scrollToBottom]);
 
