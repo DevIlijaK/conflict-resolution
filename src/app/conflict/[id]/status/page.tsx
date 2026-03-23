@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
+import { PageBack } from "~/components/page-back";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -38,7 +39,7 @@ export default function ConflictStatusPage({
 
   if (conflict === undefined) {
     return (
-      <div className="flex min-h-dvh items-center justify-center">
+      <div className="flex flex-1 items-center justify-center py-16">
         <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     );
@@ -46,7 +47,7 @@ export default function ConflictStatusPage({
 
   if (conflict === null) {
     return (
-      <div className="bg-background flex min-h-dvh items-center justify-center p-6">
+      <div className="bg-background flex flex-1 items-center justify-center p-6">
         <p className="text-muted-foreground">Conflict not found.</p>
       </div>
     );
@@ -56,24 +57,17 @@ export default function ConflictStatusPage({
   const intakeComplete = phase === "complete";
   const canOpenChat =
     !intakeComplete && conflict.status !== "in_progress";
+  const canViewTranscript =
+    intakeComplete || phase === "summarizing";
 
   return (
-    <div className="bg-background min-h-dvh">
-      <header className="border-b px-4 py-3">
-        <div className="mx-auto flex max-w-2xl flex-wrap items-center justify-between gap-3">
+    <div className="bg-background flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="mx-auto min-h-0 w-full max-w-2xl flex-1 space-y-6 overflow-y-auto px-4 py-8">
+        <div className="flex items-center gap-1">
+          <PageBack href="/" label="Back to your conflicts" />
           <h1 className="text-lg font-semibold">Conflict status</h1>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href={`/conflict/${id}`}>Intake</Link>
-            </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/conflicts">All conflicts</Link>
-            </Button>
-          </div>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
         <div>
           <p className="text-muted-foreground text-sm">Conflict</p>
           <p className="text-foreground text-xl font-semibold tracking-tight">
@@ -134,17 +128,28 @@ export default function ConflictStatusPage({
                     {phase === "not_started" &&
                       "Open intake and send a first message to begin."}
                   </p>
-                  {canOpenChat && (
-                    <Button size="sm" asChild>
-                      <Link href={`/conflict/${id}`}>Go to intake chat</Link>
-                    </Button>
+                  {(canOpenChat || canViewTranscript) && (
+                    <div className="flex flex-wrap gap-2">
+                      {canOpenChat && (
+                        <Button size="sm" asChild>
+                          <Link href={`/conflict/${id}`}>Go to intake chat</Link>
+                        </Button>
+                      )}
+                      {canViewTranscript && (
+                        <Button size="sm" variant="outline" asChild>
+                          <Link href={`/conflict/${id}/intake/transcript`}>
+                            View intake transcript
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </div>
               </li>
             </ol>
           </CardContent>
         </Card>
-      </main>
+      </div>
     </div>
   );
 }

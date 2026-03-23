@@ -19,6 +19,73 @@ import { Send } from "lucide-react";
 import { cx } from "class-variance-authority";
 import { type Id } from "convex/_generated/dataModel";
 
+const noop = () => {
+  void 0;
+};
+
+/** Read-only transcript of the intake thread; no compose or send. */
+export function ConflictChatTranscript({
+  conflictId,
+}: {
+  conflictId: Id<"conflicts">;
+}) {
+  const messages = useQuery(api.messages.listConflictMessages, {
+    conflictId,
+  });
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = useCallback(
+    (behavior: ScrollBehavior = "smooth") => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior });
+      }
+    },
+    [messagesEndRef],
+  );
+
+  const windowSize = useWindowSize();
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [windowSize, messages, scrollToBottom]);
+
+  if (!messages) return null;
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col bg-white">
+      <div className="min-h-0 flex-1 overflow-y-auto px-2 py-4 md:px-4">
+        <div className="mx-auto w-full max-w-2xl space-y-6">
+          {messages.length === 0 && (
+            <div className="space-y-2 text-center text-gray-500">
+              <p>There are no intake messages for this conflict yet.</p>
+              <p className="text-sm">
+                After you chat with the assistant, the conversation will appear
+                here.
+              </p>
+            </div>
+          )}
+          {messages.map((message) => (
+            <React.Fragment key={message._id}>
+              <MessageItem message={message} isUser={true}>
+                {message.prompt}
+              </MessageItem>
+              <MessageItem message={message} isUser={false}>
+                <ServerMessage
+                  message={message}
+                  isDriven={false}
+                  stopStreaming={noop}
+                  scrollToBottom={scrollToBottom}
+                />
+              </MessageItem>
+            </React.Fragment>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ConflictChatWindow({
   conflictId,
 }: {
@@ -84,10 +151,10 @@ export function ConflictChatWindow({
   };
 
   return (
-    <div className="flex h-full min-h-[60vh] flex-1 flex-col bg-white">
+    <div className="flex min-h-0 flex-1 flex-col bg-white">
       <div
         ref={messageContainerRef}
-        className="flex-1 overflow-y-auto px-2 py-4 md:px-4"
+        className="min-h-0 flex-1 overflow-y-auto px-2 py-4 md:px-4"
       >
         <div className="mx-auto w-full max-w-2xl space-y-6">
           {messages.length === 0 && (

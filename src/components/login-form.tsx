@@ -14,7 +14,7 @@ import { MessageSquare, Users, Zap } from "lucide-react";
 
 export default function LoginForm() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+    <div className="bg-gradient-to-br from-slate-50 to-slate-100 w-full rounded-lg p-4">
       <div className="w-full max-w-md space-y-8">
         {/* Hero Section */}
         <div className="space-y-4 text-center">
