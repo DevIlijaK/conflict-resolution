@@ -29,7 +29,16 @@ const noop = () => {
   void 0;
 };
 
-/** Read-only transcript of the intake thread; no compose or send. */
+function scrollEndIntoView(
+  el: HTMLElement | null,
+  behavior: ScrollBehavior = "smooth",
+) {
+  if (!el) return;
+  window.setTimeout(() => {
+    if (el.isConnected) el.scrollIntoView({ behavior });
+  }, 1000);
+}
+
 export function ConflictChatTranscript({
   conflictId,
 }: {
@@ -40,14 +49,9 @@ export function ConflictChatTranscript({
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = useCallback(
-    (behavior: ScrollBehavior = "smooth") => {
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior });
-      }
-    },
-    [messagesEndRef],
-  );
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    scrollEndIntoView(messagesEndRef.current, behavior);
+  }, []);
 
   const windowSize = useWindowSize();
 
@@ -112,14 +116,9 @@ export function ConflictChatWindow({
     inputRef.current?.focus();
   }, []);
 
-  const scrollToBottom = useCallback(
-    (behavior: ScrollBehavior = "smooth") => {
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior });
-      }
-    },
-    [messagesEndRef],
-  );
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    scrollEndIntoView(messagesEndRef.current, behavior);
+  }, []);
 
   const windowSize = useWindowSize();
 
@@ -143,7 +142,7 @@ export function ConflictChatWindow({
 
   useEffect(() => {
     scrollToBottom();
-  }, [windowSize, scrollToBottom]);
+  }, [windowSize, messages, scrollToBottom]);
 
   if (!messages) return null;
 
