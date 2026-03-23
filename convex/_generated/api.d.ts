@@ -8,12 +8,15 @@
  * @module
  */
 
-import type * as chat from "../chat.js";
+import type * as ai_kinds_intakeInterview from "../ai/kinds/intakeInterview.js";
+import type * as ai_prompts_intakeInterview from "../ai/prompts/intakeInterview.js";
+import type * as ai_streamingChat from "../ai/streamingChat.js";
 import type * as conflicts from "../conflicts.js";
+import type * as http_conflictIntakeStream from "../http/conflictIntakeStream.js";
 import type * as http from "../http.js";
-import type * as intakeConstants from "../intakeConstants.js";
-import type * as intakeSummary from "../intakeSummary.js";
-import type * as intakeSummarySchema from "../intakeSummarySchema.js";
+import type * as intake_constants from "../intake/constants.js";
+import type * as intake_summary from "../intake/summary.js";
+import type * as intake_summarySchema from "../intake/summarySchema.js";
 import type * as messages from "../messages.js";
 import type * as streaming from "../streaming.js";
 import type * as users from "../users.js";
@@ -33,12 +36,15 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  chat: typeof chat;
+  "ai/kinds/intakeInterview": typeof ai_kinds_intakeInterview;
+  "ai/prompts/intakeInterview": typeof ai_prompts_intakeInterview;
+  "ai/streamingChat": typeof ai_streamingChat;
   conflicts: typeof conflicts;
+  "http/conflictIntakeStream": typeof http_conflictIntakeStream;
   http: typeof http;
-  intakeConstants: typeof intakeConstants;
-  intakeSummary: typeof intakeSummary;
-  intakeSummarySchema: typeof intakeSummarySchema;
+  "intake/constants": typeof intake_constants;
+  "intake/summary": typeof intake_summary;
+  "intake/summarySchema": typeof intake_summarySchema;
   messages: typeof messages;
   streaming: typeof streaming;
   users: typeof users;

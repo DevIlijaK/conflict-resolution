@@ -1,7 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { mustGetCurrentUser } from "./users";
-import { PENDING_INTAKE_TITLE } from "./intakeConstants";
+import { PENDING_INTAKE_TITLE } from "./intake/constants";
 
 export const createConflict = mutation({
   args: {},

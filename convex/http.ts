@@ -1,5 +1,5 @@
 import { httpRouter } from "convex/server";
-import { streamConflictChat } from "./chat";
+import { streamConflictChat } from "./http/conflictIntakeStream";
 import { httpAction } from "./_generated/server";
 import type { WebhookEvent } from "@clerk/backend";
 import { internal } from "./_generated/api";
