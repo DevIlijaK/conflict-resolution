@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useQuery, useMutation } from "convex/react";
 import React, {
   useState,
@@ -11,13 +12,18 @@ import React, {
   type KeyboardEvent,
 } from "react";
 import MessageItem from "./message-item";
-import { ServerMessage } from "./server-message";
 import { api } from "convex/_generated/api";
 import { useWindowSize } from "~/lib/utils";
 import { Button } from "./ui/button";
 import { Send } from "lucide-react";
 import { cx } from "class-variance-authority";
 import { type Id } from "convex/_generated/dataModel";
+
+const ServerMessage = dynamic(
+  () =>
+    import("./server-message").then((mod) => ({ default: mod.ServerMessage })),
+  { ssr: false },
+);
 
 const noop = () => {
   void 0;

@@ -4,7 +4,6 @@ import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import ConvexClientProvider from "./convex-client-provider";
-import { Footer } from "~/components/footer";
 import { Header } from "~/components/header";
 
 export const metadata: Metadata = {
@@ -22,16 +21,15 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable}`}>
-      <body className="bg-background min-h-dvh w-full min-w-0 antialiased">
+    <html lang="en" className={`${geist.variable} h-dvh`}>
+      <body className="bg-background h-dvh w-full min-w-0 overflow-hidden antialiased">
         <ClerkProvider>
           <ConvexClientProvider>
-            <div className="flex min-h-dvh w-full min-w-0 flex-col">
+            <div className="flex h-dvh max-h-dvh w-full min-w-0 flex-col overflow-hidden">
               <Header />
-              <main className="flex min-h-0 min-w-0 flex-1 flex-col">
+              <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
                 {children}
               </main>
-              <Footer />
             </div>
           </ConvexClientProvider>
         </ClerkProvider>
