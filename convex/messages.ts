@@ -96,29 +96,26 @@ export const getInterviewHistory = internalQuery({
       .withIndex("by_conflict", (q) => q.eq("conflictId", args.conflictId))
       .collect();
 
-    const joinedResponses = await Promise.all(
+    const messagesWithResponses = await Promise.all(
       allMessages.map(async (userMessage) => {
-        return {
-          userMessage,
-          responseMessage: await streamingComponent.getStreamBody(
-            ctx,
-            userMessage.responseStreamId as StreamId,
-          ),
-        };
+        const assistantContent = userMessage.responseStreamId
+          ? (await streamingComponent.getStreamBody(ctx, userMessage.responseStreamId as StreamId)).text
+          : (userMessage.responseText ?? "");
+        return { userMessage, assistantContent };
       }),
     );
 
     return {
       conflict,
-      messages: joinedResponses.flatMap((joined) => {
+      messages: messagesWithResponses.flatMap(({ userMessage, assistantContent }) => {
         const user = {
           role: "user" as const,
-          content: joined.userMessage.prompt,
+          content: userMessage.prompt,
         };
 
         const assistant = {
           role: "assistant" as const,
-          content: joined.responseMessage.text,
+          content: assistantContent,
         };
 
         if (!assistant.content) return [user];

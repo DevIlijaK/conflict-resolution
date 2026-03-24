@@ -11,6 +11,7 @@ export const env = createEnv({
       .enum(["development", "test", "production"])
       .default("development"),
     CONVEX_DEPLOYMENT: z.string().optional(),
+    OPENAI_API_KEY: z.string().min(1),
   },
 
   /**
@@ -35,6 +36,7 @@ export const env = createEnv({
     NEXT_PUBLIC_CONVEX_HTTP_URL: process.env.NEXT_PUBLIC_CONVEX_HTTP_URL,
     CONVEX_DEPLOYMENT: process.env.CONVEX_DEPLOYMENT,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

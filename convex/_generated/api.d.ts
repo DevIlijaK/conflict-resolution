@@ -20,6 +20,7 @@ import type * as intake_summarySchema from "../intake/summarySchema.js";
 import type * as messages from "../messages.js";
 import type * as streaming from "../streaming.js";
 import type * as users from "../users.js";
+import type * as voice from "../voice.js";
 
 import type {
   ApiFromModules,
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   messages: typeof messages;
   streaming: typeof streaming;
   users: typeof users;
+  voice: typeof voice;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

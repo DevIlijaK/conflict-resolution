@@ -11,7 +11,8 @@ export default defineSchema({
   conflictMessages: defineTable({
     conflictId: v.id("conflicts"),
     prompt: v.string(),
-    responseStreamId: StreamIdValidator,
+    responseStreamId: v.optional(StreamIdValidator),
+    responseText: v.optional(v.string()),
     userId: v.id("users"),
     type: v.union(
       v.literal("interview"),

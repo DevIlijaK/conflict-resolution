@@ -75,16 +75,24 @@ export function ConflictChatTranscript({
           )}
           {messages.map((message) => (
             <React.Fragment key={message._id}>
-              <MessageItem message={message} isUser={true}>
-                {message.prompt}
-              </MessageItem>
+              {message.prompt ? (
+                <MessageItem message={message} isUser={true}>
+                  {message.prompt}
+                </MessageItem>
+              ) : null}
               <MessageItem message={message} isUser={false}>
-                <ServerMessage
-                  message={message}
-                  isDriven={false}
-                  stopStreaming={noop}
-                  scrollToBottom={scrollToBottom}
-                />
+                {message.responseStreamId ? (
+                  <ServerMessage
+                    message={message}
+                    isDriven={false}
+                    stopStreaming={noop}
+                    scrollToBottom={scrollToBottom}
+                  />
+                ) : (
+                  <p className="whitespace-pre-wrap">
+                    {message.responseText}
+                  </p>
+                )}
               </MessageItem>
             </React.Fragment>
           ))}
@@ -180,19 +188,27 @@ export function ConflictChatWindow({
           )}
           {messages.map((message) => (
             <React.Fragment key={message._id}>
-              <MessageItem message={message} isUser={true}>
-                {message.prompt}
-              </MessageItem>
+              {message.prompt ? (
+                <MessageItem message={message} isUser={true}>
+                  {message.prompt}
+                </MessageItem>
+              ) : null}
               <MessageItem message={message} isUser={false}>
-                <ServerMessage
-                  message={message}
-                  isDriven={drivenIds.has(message._id)}
-                  stopStreaming={() => {
-                    setIsStreaming(false);
-                    focusInput();
-                  }}
-                  scrollToBottom={scrollToBottom}
-                />
+                {message.responseStreamId ? (
+                  <ServerMessage
+                    message={message}
+                    isDriven={drivenIds.has(message._id)}
+                    stopStreaming={() => {
+                      setIsStreaming(false);
+                      focusInput();
+                    }}
+                    scrollToBottom={scrollToBottom}
+                  />
+                ) : (
+                  <p className="whitespace-pre-wrap">
+                    {message.responseText}
+                  </p>
+                )}
               </MessageItem>
             </React.Fragment>
           ))}
