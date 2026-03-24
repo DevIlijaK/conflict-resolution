@@ -5,7 +5,6 @@ import { useStream } from "@convex-dev/persistent-text-streaming/react";
 import { api } from "convex/_generated/api";
 import { type Doc } from "convex/_generated/dataModel";
 import { useMemo, useEffect } from "react";
-import Markdown from "react-markdown";
 import { env } from "../env";
 
 export function ServerMessage({
@@ -48,10 +47,14 @@ export function ServerMessage({
   }, [text, scrollToBottom]);
 
   return (
-    <div className="md-answer">
-      <Markdown>{text || "Thinking..."}</Markdown>
+    <div className="text-sm leading-relaxed">
+      {text ? (
+        <p className="whitespace-pre-wrap">{text}</p>
+      ) : (
+        <p className="animate-pulse text-muted-foreground">Thinking…</p>
+      )}
       {status === "error" && (
-        <div className="mt-2 text-red-500">Error loading response</div>
+        <p className="mt-2 text-destructive">Error loading response</p>
       )}
     </div>
   );

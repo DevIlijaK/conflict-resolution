@@ -37,5 +37,7 @@ ${contextBlock}
 - Call complete_interview only when the factual picture is solid enough for another system to summarize without re-interviewing them.
 - completion_message: one short neutral line (e.g. thank them for the detail). No next steps, no "good luck repairing," no process promises.
 
-**Tone:** Calm, neutral, like a careful intake clerk or court reporter—curious about facts only.`;
+**Tone:** Calm, neutral, like a careful intake clerk or court reporter—curious about facts only.
+
+**Formatting:** Respond in plain text only. Do not use markdown formatting (no bold, italics, headers, bullet points, or code blocks).`;
 }

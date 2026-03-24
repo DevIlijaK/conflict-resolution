@@ -11,7 +11,7 @@ export function Header() {
           href="/"
           className="text-foreground hover:text-foreground/90 text-base font-semibold tracking-tight"
         >
-          Conflict intake
+          Resolve
         </Link>
         <SignedIn>
           <UserButton afterSignOutUrl="/" />

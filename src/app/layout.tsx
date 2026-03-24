@@ -7,8 +7,9 @@ import ConvexClientProvider from "./convex-client-provider";
 import { Header } from "~/components/header";
 
 export const metadata: Metadata = {
-  title: "Conflict intake",
-  description: "AI-assisted conflict intake",
+  title: "Resolve",
+  description:
+    "Guided conflict resolution — both sides heard, then AI-driven clarity",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 

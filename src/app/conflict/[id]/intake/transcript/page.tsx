@@ -42,10 +42,11 @@ export default function IntakeTranscriptPage({
           />
           <div className="min-w-0 pt-1.5">
             <h1 className="text-lg font-semibold leading-none">
-              Intake transcript
+              Step 1 transcript — Your perspective
             </h1>
             <p className="text-muted-foreground mt-1.5 text-sm">
-              Read-only copy of your intake conversation with the assistant.
+              Read-only record of your conversation with the assistant. This
+              account feeds into the final AI summary in Step 3.
             </p>
           </div>
         </div>

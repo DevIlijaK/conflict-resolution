@@ -57,7 +57,13 @@ export default function ConflictIntakePage({
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-4">
         <div className="mb-4 flex items-center gap-1">
           <PageBack href="/" label="Back to your conflicts" />
-          <h1 className="text-lg font-semibold">Conflict intake</h1>
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold">Step 1 — Your perspective</h1>
+            <p className="text-muted-foreground mt-0.5 text-sm">
+              Tell the assistant what happened. The other person will share
+              their side in Step 2.
+            </p>
+          </div>
         </div>
         <ConflictChatWindow conflictId={id} />
       </div>

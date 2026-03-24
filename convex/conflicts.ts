@@ -73,6 +73,33 @@ const conflictListItemValidator = v.object({
   updatedAt: v.number(),
 });
 
+export const deleteConflict = mutation({
+  args: { conflictId: v.id("conflicts") },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const user = await mustGetCurrentUser(ctx);
+    const conflict = await ctx.db.get(args.conflictId);
+    if (!conflict) {
+      throw new Error("Conflict not found");
+    }
+    if (conflict.createdBy !== user._id) {
+      throw new Error("Access denied: You can only delete your own conflicts");
+    }
+
+    const messages = await ctx.db
+      .query("conflictMessages")
+      .withIndex("by_conflict", (q) => q.eq("conflictId", args.conflictId))
+      .collect();
+
+    for (const msg of messages) {
+      await ctx.db.delete(msg._id);
+    }
+
+    await ctx.db.delete(args.conflictId);
+    return null;
+  },
+});
+
 export const listMyConflicts = query({
   args: {},
   returns: v.array(conflictListItemValidator),

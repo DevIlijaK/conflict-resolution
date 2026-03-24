@@ -6,7 +6,6 @@ import { useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { PageBack } from "~/components/page-back";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -15,19 +14,33 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { CheckCircle2, Circle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import {
+  ResolutionStep,
+  type StepStatus,
+} from "~/components/resolution-step";
 
-type IntakePhase = "not_started" | "conversation" | "summarizing" | "complete";
-
-function intakePhase(conflict: {
+function intakeStatus(conflict: {
   status: string;
   intakeStepDone?: boolean;
-}): IntakePhase {
+}): StepStatus {
   if (conflict.intakeStepDone === true) return "complete";
   if (conflict.status === "in_progress") return "summarizing";
   if (conflict.status === "draft") return "not_started";
-  return "conversation";
+  return "in_progress";
 }
+
+const step1Copy: Record<StepStatus, string> = {
+  complete:
+    "Your account has been recorded and summarised for the next steps.",
+  summarizing:
+    "The chat is closed. The AI is writing a summary of your account.",
+  in_progress:
+    "Answer the assistant\u2019s questions so your side of the story is complete.",
+  not_started:
+    "Open the intake chat and describe what happened to begin.",
+  locked: "",
+};
 
 export default function ConflictStatusPage({
   params,
@@ -53,12 +66,10 @@ export default function ConflictStatusPage({
     );
   }
 
-  const phase = intakePhase(conflict);
+  const phase = intakeStatus(conflict);
   const intakeComplete = phase === "complete";
-  const canOpenChat =
-    !intakeComplete && conflict.status !== "in_progress";
-  const canViewTranscript =
-    intakeComplete || phase === "summarizing";
+  const canOpenChat = !intakeComplete && conflict.status !== "in_progress";
+  const canViewTranscript = intakeComplete || phase === "summarizing";
 
   return (
     <div className="bg-background flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -77,75 +88,59 @@ export default function ConflictStatusPage({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Stages</CardTitle>
+            <CardTitle className="text-base">Resolution steps</CardTitle>
             <CardDescription>
-              For now there is one stage: intake. More steps will show here when
-              they exist.
+              Every conflict moves through three steps: both people share their
+              perspective, then the AI synthesises a fair summary with
+              actionable next moves.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ol className="space-y-4">
-              <li className="flex gap-4">
-                <div className="flex shrink-0 flex-col items-center pt-0.5">
-                  {intakeComplete ? (
-                    <CheckCircle2
-                      className="text-primary h-6 w-6"
-                      aria-hidden
-                    />
-                  ) : phase === "summarizing" ? (
-                    <Loader2
-                      className="text-muted-foreground h-6 w-6 animate-spin"
-                      aria-hidden
-                    />
-                  ) : (
-                    <Circle
-                      className="text-muted-foreground h-6 w-6"
-                      strokeWidth={1.5}
-                      aria-hidden
-                    />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1 space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">1. Intake</span>
-                    {intakeComplete ? (
-                      <Badge>Finished</Badge>
-                    ) : phase === "summarizing" ? (
-                      <Badge variant="secondary">In progress</Badge>
-                    ) : phase === "not_started" ? (
-                      <Badge variant="outline">Not started</Badge>
-                    ) : (
-                      <Badge variant="secondary">In progress</Badge>
-                    )}
-                  </div>
-                  <p className="text-muted-foreground text-sm">
-                    {intakeComplete &&
-                      "Your conversation is saved and a detailed summary was written for later steps."}
-                    {phase === "summarizing" &&
-                      "The chat is closed. A separate model is writing a detailed title and summary from your conversation."}
-                    {phase === "conversation" &&
-                      "Answer the assistant’s questions so the factual record is complete."}
-                    {phase === "not_started" &&
-                      "Open intake and send a first message to begin."}
-                  </p>
-                  {(canOpenChat || canViewTranscript) && (
+            <ol className="space-y-6">
+              <ResolutionStep
+                number={1}
+                title="Your perspective"
+                status={phase}
+                description={step1Copy[phase]}
+                actions={
+                  (canOpenChat || canViewTranscript) && (
                     <div className="flex flex-wrap gap-2">
                       {canOpenChat && (
                         <Button size="sm" asChild>
-                          <Link href={`/conflict/${id}`}>Go to intake chat</Link>
+                          <Link href={`/conflict/${id}`}>
+                            Share your perspective
+                          </Link>
                         </Button>
                       )}
                       {canViewTranscript && (
                         <Button size="sm" variant="outline" asChild>
                           <Link href={`/conflict/${id}/intake/transcript`}>
-                            View intake transcript
+                            View your transcript
                           </Link>
                         </Button>
                       )}
                     </div>
-                  )}
-                </div>
-              </li>
+                  )
+                }
+              />
+
+              <li className="border-t border-border" aria-hidden />
+
+              <ResolutionStep
+                number={2}
+                title="The other person's perspective"
+                status="locked"
+                description="The other person involved will be invited to share their side through the same guided conversation. This step unlocks after yours is complete."
+              />
+
+              <li className="border-t border-border" aria-hidden />
+
+              <ResolutionStep
+                number={3}
+                title="AI summary & action plan"
+                status="locked"
+                description="Once both sides have been heard, the AI will produce a balanced summary of what happened and recommend concrete next steps for resolution."
+              />
             </ol>
           </CardContent>
         </Card>

@@ -1,0 +1,6 @@
+---
+description: Styling and CSS conventions for this project
+globs: ["**/*.tsx", "**/*.ts"]
+---
+
+Always use `cn` from `~/lib/utils` for all className composition and conditional classes, never template literals, ternary expressions inline, or other class utilities. Always use shadcn semantic tokens instead of hard-coded Tailwind color classes.

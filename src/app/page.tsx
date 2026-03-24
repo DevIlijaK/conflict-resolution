@@ -9,6 +9,7 @@ import {
   useQuery,
 } from "convex/react";
 import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import LoginForm from "~/components/login-form";
@@ -21,17 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-
-const statusLabel: Record<
-  "draft" | "interview" | "in_progress" | "resolved" | "archived",
-  string
-> = {
-  draft: "Draft",
-  interview: "Interview",
-  in_progress: "In progress",
-  resolved: "Resolved",
-  archived: "Archived",
-};
+import { statusLabel, type ConflictStatus } from "~/lib/conflict-labels";
 
 function formatWhen(ts: number) {
   return new Date(ts).toLocaleString(undefined, {
@@ -95,9 +86,9 @@ function ConflictsList() {
             <CardHeader>
               <CardTitle>No conflicts yet</CardTitle>
               <CardDescription>
-                Create a conflict to start the intake flow. You will answer
-                questions on the intake screen; progress and stages appear on
-                the status page.
+                Each conflict follows three steps: you share your perspective,
+                the other person shares theirs, then the AI produces a fair
+                summary with suggested actions. Start by creating a conflict.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -126,11 +117,25 @@ function ConflictRow({
   conflict: {
     _id: Id<"conflicts">;
     title: string;
-    status: keyof typeof statusLabel;
+    status: ConflictStatus;
     createdAt: number;
     updatedAt: number;
   };
 }) {
+  const deleteConflict = useMutation(api.conflicts.deleteConflict);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteConflict({ conflictId: conflict._id });
+    } finally {
+      setDeleting(false);
+      setConfirmingDelete(false);
+    }
+  };
+
   return (
     <Card className="hover:bg-muted/40 transition-colors">
       <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-2 space-y-0 pb-2">
@@ -149,10 +154,41 @@ function ConflictRow({
         </div>
         <Badge variant="secondary">{statusLabel[conflict.status]}</Badge>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="flex items-center gap-3 pt-0">
         <Button variant="link" className="h-auto p-0" asChild>
           <Link href={`/conflict/${conflict._id}/status`}>Open</Link>
         </Button>
+        {confirmingDelete ? (
+          <span className="ml-auto flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Delete this conflict?</span>
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={deleting}
+              onClick={() => void handleDelete()}
+            >
+              {deleting ? "Deleting…" : "Confirm"}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={deleting}
+              onClick={() => setConfirmingDelete(false)}
+            >
+              Cancel
+            </Button>
+          </span>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-destructive ml-auto h-8 w-8"
+            onClick={() => setConfirmingDelete(true)}
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">Delete conflict</span>
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

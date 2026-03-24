@@ -13,10 +13,9 @@ import React, {
 } from "react";
 import MessageItem from "./message-item";
 import { api } from "convex/_generated/api";
-import { useWindowSize } from "~/lib/utils";
+import { cn, useWindowSize } from "~/lib/utils";
 import { Button } from "./ui/button";
 import { Send } from "lucide-react";
-import { cx } from "class-variance-authority";
 import { type Id } from "convex/_generated/dataModel";
 
 const ServerMessage = dynamic(
@@ -62,15 +61,15 @@ export function ConflictChatTranscript({
   if (!messages) return null;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-white">
+    <div className="flex min-h-0 flex-1 flex-col bg-background">
       <div className="min-h-0 flex-1 overflow-y-auto px-2 py-4 md:px-4">
         <div className="mx-auto w-full max-w-2xl space-y-6">
           {messages.length === 0 && (
-            <div className="space-y-2 text-center text-gray-500">
-              <p>There are no intake messages for this conflict yet.</p>
+            <div className="space-y-2 text-center text-muted-foreground">
+              <p>No messages yet for Step 1.</p>
               <p className="text-sm">
-                After you chat with the assistant, the conversation will appear
-                here.
+                Once you share your perspective with the assistant, the
+                conversation will appear here.
               </p>
             </div>
           )}
@@ -156,21 +155,26 @@ export function ConflictChatWindow({
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-white">
+    <div className="flex min-h-0 flex-1 flex-col bg-background">
       <div
         ref={messageContainerRef}
         className="min-h-0 flex-1 overflow-y-auto px-2 py-4 md:px-4"
       >
         <div className="mx-auto w-full max-w-2xl space-y-6">
           {messages.length === 0 && (
-            <div className="space-y-2 text-center text-gray-500">
+            <div className="space-y-2 text-center text-muted-foreground">
+              <p className="font-medium text-foreground">
+                Step 1 of 3 — Your perspective
+              </p>
               <p>
-                The assistant will ask questions to learn what happened—who was
-                involved, what was said or done, and in what order.
+                The assistant will ask questions to understand what happened
+                from your point of view — who was involved, what was said or
+                done, and in what order.
               </p>
               <p>
                 Start with a few sentences in your own words; it will follow up
-                one question at a time.
+                one question at a time. The other person will share their side
+                in Step 2.
               </p>
             </div>
           )}
@@ -204,11 +208,11 @@ export function ConflictChatWindow({
         <textarea
           ref={inputRef}
           rows={3}
-          className="field-sizing-content max-h-36 min-h-[4.5rem] grow resize-none overflow-y-auto border-none px-2 text-sm outline-none"
+          className="field-sizing-content max-h-36 min-h-[4.5rem] grow resize-none overflow-y-auto border-none bg-transparent px-2 text-sm focus-visible:outline-none placeholder:text-muted-foreground"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Describe what happened. The assistant will ask follow-ups."
+          placeholder="Describe what happened from your perspective. The assistant will ask follow-ups."
         />
       </ChatInputContainer>
     </div>
@@ -224,8 +228,8 @@ const ChatInputContainer: FC<
 > = ({ children, onClickSend, className, isReady }) => {
   return (
     <div
-      className={cx(
-        "bg-background flex w-full flex-col gap-2 rounded-2xl border p-3 shadow-sm",
+      className={cn(
+        "flex w-full flex-col gap-2 rounded-xl border bg-background p-3 shadow-sm transition-shadow focus-within:ring-2 focus-within:ring-ring",
         className,
       )}
     >
@@ -234,7 +238,7 @@ const ChatInputContainer: FC<
         <Button
           type="button"
           size="icon"
-          className="text-primary-foreground hover:bg-primary/90 shrink-0"
+          className="shrink-0"
           onClick={onClickSend}
           disabled={!isReady}
         >
