@@ -221,6 +221,7 @@ export function VoiceSession({ conflictId }: VoiceSessionProps) {
       dc.addEventListener("message", (e: MessageEvent<string>) => {
         try {
           const event = JSON.parse(e.data) as RealtimeEvent;
+
           addEvent(event);
 
           if (isFunctionCallDone(event)) {
@@ -231,18 +232,10 @@ export function VoiceSession({ conflictId }: VoiceSessionProps) {
             event.type ===
             "conversation.item.input_audio_transcription.completed"
           ) {
-            console.log("[voice] user transcript:", event.transcript);
             pendingUserTextRef.current = event.transcript as string;
           }
 
-          if (event.type === "response.audio_transcript.done") {
-            console.log("[voice] assistant transcript:", event.transcript);
-            console.log(
-              "[voice] pairing → user:",
-              pendingUserTextRef.current,
-              "| assistant:",
-              event.transcript,
-            );
+          if (event.type === "response.output_audio_transcript.done") {
             transcriptBufferRef.current.push({
               userText: pendingUserTextRef.current ?? "",
               assistantText: event.transcript as string,
