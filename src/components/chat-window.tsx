@@ -15,8 +15,29 @@ import MessageItem from "./message-item";
 import { api } from "convex/_generated/api";
 import { cn, useWindowSize } from "~/lib/utils";
 import { Button } from "./ui/button";
-import { Send } from "lucide-react";
+import { Bot, Send } from "lucide-react";
 import { type Id } from "convex/_generated/dataModel";
+
+const INTRO_MESSAGE =
+  "Hi, I'm here to help document what happened. My role is to gather the facts\u2009—\u2009who was involved, what was said or done, and in what order. Start by telling me in a few sentences what the situation is about, and I'll follow up with questions one at a time.";
+
+function IntroMessage() {
+  return (
+    <div className="flex gap-3 justify-start">
+      <div className="flex max-w-[90%] gap-2.5 md:max-w-[80%]">
+        <div
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground"
+          aria-hidden="true"
+        >
+          <Bot className="h-3 w-3" />
+        </div>
+        <div className="rounded-2xl px-3 py-2 text-sm leading-relaxed bg-muted text-foreground">
+          <p className="whitespace-pre-wrap">{INTRO_MESSAGE}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const ServerMessage = dynamic(
   () =>
@@ -61,18 +82,10 @@ export function ConflictChatTranscript({
   if (!messages) return null;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-background">
+    <div className="bg-background flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto px-2 py-4 md:px-4">
         <div className="mx-auto w-full max-w-2xl space-y-6">
-          {messages.length === 0 && (
-            <div className="space-y-2 text-center text-muted-foreground">
-              <p>No messages yet for Step 1.</p>
-              <p className="text-sm">
-                Once you share your perspective with the assistant, the
-                conversation will appear here.
-              </p>
-            </div>
-          )}
+          <IntroMessage />
           {messages.map((message) => (
             <React.Fragment key={message._id}>
               {message.prompt ? (
@@ -89,9 +102,7 @@ export function ConflictChatTranscript({
                     scrollToBottom={scrollToBottom}
                   />
                 ) : (
-                  <p className="whitespace-pre-wrap">
-                    {message.responseText}
-                  </p>
+                  <p className="whitespace-pre-wrap">{message.responseText}</p>
                 )}
               </MessageItem>
             </React.Fragment>
@@ -163,29 +174,13 @@ export function ConflictChatWindow({
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-background">
+    <div className="bg-background flex min-h-0 flex-1 flex-col">
       <div
         ref={messageContainerRef}
         className="min-h-0 flex-1 overflow-y-auto px-2 py-4 md:px-4"
       >
         <div className="mx-auto w-full max-w-2xl space-y-6">
-          {messages.length === 0 && (
-            <div className="space-y-2 text-center text-muted-foreground">
-              <p className="font-medium text-foreground">
-                Step 1 of 3 — Your perspective
-              </p>
-              <p>
-                The assistant will ask questions to understand what happened
-                from your point of view — who was involved, what was said or
-                done, and in what order.
-              </p>
-              <p>
-                Start with a few sentences in your own words; it will follow up
-                one question at a time. The other person will share their side
-                in Step 2.
-              </p>
-            </div>
-          )}
+          <IntroMessage />
           {messages.map((message) => (
             <React.Fragment key={message._id}>
               {message.prompt ? (
@@ -205,9 +200,7 @@ export function ConflictChatWindow({
                     scrollToBottom={scrollToBottom}
                   />
                 ) : (
-                  <p className="whitespace-pre-wrap">
-                    {message.responseText}
-                  </p>
+                  <p className="whitespace-pre-wrap">{message.responseText}</p>
                 )}
               </MessageItem>
             </React.Fragment>
@@ -224,7 +217,7 @@ export function ConflictChatWindow({
         <textarea
           ref={inputRef}
           rows={3}
-          className="field-sizing-content max-h-36 min-h-[4.5rem] grow resize-none overflow-y-auto border-none bg-transparent px-2 text-sm focus-visible:outline-none placeholder:text-muted-foreground"
+          className="placeholder:text-muted-foreground field-sizing-content max-h-36 min-h-[4.5rem] grow resize-none overflow-y-auto border-none bg-transparent px-2 text-sm focus-visible:outline-none"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -245,7 +238,7 @@ const ChatInputContainer: FC<
   return (
     <div
       className={cn(
-        "flex w-full flex-col gap-2 rounded-xl border bg-background p-3 shadow-sm transition-shadow focus-within:ring-2 focus-within:ring-ring",
+        "bg-background focus-within:ring-ring flex w-full flex-col gap-2 rounded-xl border p-3 shadow-sm transition-shadow focus-within:ring-2",
         className,
       )}
     >
